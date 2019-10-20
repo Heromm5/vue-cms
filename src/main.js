@@ -11,12 +11,17 @@ import router from './router.js'
 
 // 注册Vue
 import Vuex from 'vuex'
+
 Vue.use(Vuex)
+
+// 每次进入网站，都会调用 mian.js ，在刚调用的时候，先从本地存储中，把购物车的数据读出来，放到 store 中
+var car = JSON.parse(localStorage.getItem('car') || '[]')
+
 var store = new Vuex.Store({
   state: {  // this.$store.state.***
     // 将购物车中的商品，用一个数组存储起来，在 car 数组中，存储一些商品的对象，咱们可以暂时将这个商品对象设计成这个样子
     // {id:商品id, count:要购买的数量, price:商品的单价, selected:false}
-    car: []
+    car: car
   },
   mutations: {  // this.$store.commit('方法的名称', '按需传递唯一的参数')
     addToCar(state, goodsinfo) {
@@ -40,6 +45,32 @@ var store = new Vuex.Store({
       if (!flag) {
         state.car.push(goodsinfo)
       }
+
+      // 当更新 car 之后，把 car 数组，存储到本地的 localStorage 中
+      localStorage.setItem('car', JSON.stringify(state.car))
+    },
+    updateGoodsInfo(state, goodsinfo) {
+      // 修改购物车中商品的数量
+      // 分析：
+      state.car.some(item => {
+        if (item.id == goodsinfo.id) {
+          item.count = parseInt(goodsinfo.count)
+          return true
+        }
+      })
+      // 当修改完商品的数量，把最新的购物车数据，保存到本地存储中
+      localStorage.setItem('car', JSON.stringify(state.car))
+    },
+    removeFromCar(state, id) {
+      // 根据id，从store中的购物车中删除对应的那条商品数据
+      state.car.some((item, i) => {
+        if (item.id == id) {
+          state.car.splice(i, 1)
+          return true
+        }
+      })
+      // 将删除完毕后的最新的购物车数据，同步到本地存储中
+      localStorage.setItem('car', JSON.stringify(state.car))
     }
   },
   getters: {  // this.$store.getters.***
@@ -50,10 +81,16 @@ var store = new Vuex.Store({
         c += item.count
       })
       return c
+    },
+    getGoodsCount(state) {
+      var o = {}
+      state.car.forEach(item => {
+        o[item.id] = item.count
+      })
+      return o
     }
   }
 })
-
 
 
 // 导入格式化时间的插件
@@ -87,14 +124,14 @@ Vue.component(Button.name, Button)
 Vue.use(Lazyload);*/
 import MintUI from 'mint-ui'
 import 'mint-ui/lib/style.css'
+
 Vue.use(MintUI)
 
 
 // 安装图片预览插件
 import VuePreview from 'vue-preview'
+
 Vue.use(VuePreview)
-
-
 
 
 //导入 App 根组件
