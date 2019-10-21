@@ -7,7 +7,7 @@
       <div class="mui-card" v-for="(item, i) in goodslist" :key="item.id">
         <div class="mui-card-content">
           <div class="mui-card-content-inner">
-            <mt-switch></mt-switch>
+            <mt-switch v-model="$store.getters.getGoodsSelected[item.id]" @change="selectedChanged(item.id, $store.getters.getGoodsSelected[item.id])"></mt-switch>
             <img :src="item.thumb_path">
             <div class="info">
               <h1>{{item.title}}</h1>
@@ -26,8 +26,12 @@
       <!-- 结算区域 -->
       <div class="mui-card">
         <div class="mui-card-content">
-          <div class="mui-card-content-inner">
-            这是一个最简单的卡片视图控件；卡片视图常用来显示完整独立的一段信息，比如一篇文章的预览图、作者信息、点赞数量等
+          <div class="mui-card-content-inner jiesuan">
+            <div class="left">
+              <p>总计（不含运费）</p>
+              <p>已勾选商品<span class="red">{{ $store.getters.getGoodsCountAndAmount.count}}</span>件，总价：<span class="red">￥{{ $store.getters.getGoodsCountAndAmount.amount}}</span></p>
+            </div>
+            <mt-button type="danger">去结算</mt-button>
           </div>
         </div>
       </div>
@@ -67,6 +71,10 @@
         // 点击删除，把商品从 store 中根据传递的 id 删除，同时，把当前组件中的 goodslist 中，对应要删除的那个商品，使用index来删除
         this.goodslist.splice(index, 1)
         this.$store.commit('removeFromCar', id)
+      },
+      selectedChanged(id, val) {
+        // 每次点击开关，把更新的开关状态同步到 store 中
+        this.$store.commit("updateGoodsSelected", { id, selected: val })
       }
     },
     components: {
@@ -100,6 +108,17 @@
       .price {
         color: red;
         font-weight: bold;
+      }
+    }
+
+    .jiesuan {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .red {
+        font-weight: bold;
+        color: red;
       }
     }
   }
